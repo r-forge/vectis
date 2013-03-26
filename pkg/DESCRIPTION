@@ -1,0 +1,8 @@
+Package: vectis
+Version: 0.1.0
+Title: Modified Statistical Tools
+Author: Christopher Battles
+Maintainer: Christopher Battles <cbattles@startllc.com>
+Description: Modified Statistical Tools for standardization
+License: GPL (>= 2)
+
