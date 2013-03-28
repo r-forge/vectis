@@ -167,6 +167,57 @@ vectis.cap <- function(x,
   PERF["OBGU"] <- 1e6*(length(x[x>USL])/length(x[!is.na(x)]))
   PERF["OBT"] <- sum(PERF["OBLL"],PERF["OBGU"]) 
 
+# Create Plots
+  x <- as.data.frame(x)
+  aes_now <- function(...) {structure(list(...),  class = "uneval")}
+
+  p <- ggplot(x, aes(x = x)) +
+              theme(plot.margin = unit(c(3,1,1,1), "lines"))
+
+  p <- p + geom_histogram(aes(y=..density..),        
+                          binwidth = diff(range(x))/sqrt(length(x[!is.na(x)])), 
+                          color = "black", fill = "blue")
+  p <- p + geom_density()
+  p <- p + geom_vline(xintercept = LSL, linetype = 2, size = 1, color = "darkred") 
+  p <- p + geom_vline(xintercept = target, linetype = 2, size = 1, color = "green3")
+  p <- p + geom_vline(xintercept = USL, linetype = 2, size = 1, color = "darkred") 
+ 
+  p <- p + geom_text(aes_now(label = c("USL","Target","LSL"), 
+                             x = c(USL,target,LSL), y = Inf), 
+                     hjust = .5, vjust = -1, color = "black", size=5)
+  p <- p + annotate(geom = "text", 
+           x = LSL, 
+           y = 0, 
+           label = "LSL", 
+           hjust = -0.1, 
+           size = 5, color = "darkred") 
+  p <- p + annotate(geom = "text",
+           x = target, 
+           y = 0, 
+           label = "TAR",
+           hjust = -0.1,
+           size = 5, color = "green3")
+  p <- p + annotate(geom = "text",
+           x = USL, 
+           y = 0, 
+           label = "USL",
+           hjust = 1.1, 
+           size = 5, color = "darkred") 
+  gt <- ggplot_gtable(ggplot_build(p))
+  gt$layout$clip[gt$layout$name == "panel"] <- "off"
+  grid.draw(gt)
+  
+#   p <- p + stat_density(geom="path", 
+#                         position="identity", 
+#                         binwidth = diff(range(x))/sqrt(length(x[!is.na(x)])),
+#                         size = 1) +
+#            stat_function(fun = dnorm, 
+#                          args = with(as.data.frame(x),	c(mean(x), sd(x))), 
+#                          linetype = 2, size = 1)
+  
+  print(gt)
+  
+  
   output <- list(Proc_Data,CPS,PPS,PERF)
   class(output) <- 'myclass'
   return(output)
