@@ -1,4 +1,4 @@
-vectis.cap <- function(x,
+vectis.cap <- function(data,
                        distribution = "normal",
                        USL = NA,
                        LSL = NA,
@@ -10,8 +10,14 @@ vectis.cap <- function(x,
                        alpha = 0.05,
                        tol = 5.15,
                        unbias_sub = TRUE,
-                       unbias_overall = FALSE)
+                       unbias_overall = FALSE,
+                       density = FALSE,
+                       binwidth = -1
+                       )
 {
+  library(ggplot2)
+  library(grid)
+  
   if (is.na(target)){
   stop("Target not specified")
   }
@@ -93,15 +99,15 @@ vectis.cap <- function(x,
 #   unbias_overall = TRUE
   
   if (groupsize == 1){
-    R_i <- vector(mode = "numeric", length = (length(x[!is.na(x)])-(mrlength-1)))
+    R_i <- vector(mode = "numeric", length = (length(data[!is.na(data)])-(mrlength-1)))
     range_temp <- vector(mode = "numeric", length = mrlength)
-    for(i in 1:(length(x[!is.na(x)])-(mrlength-1))){
+    for(i in 1:(length(data[!is.na(data)])-(mrlength-1))){
       for(j in i:(i+mrlength-1)){
-        range_temp[j+1-i]<-x[j]
+        range_temp[j+1-i]<-data[j]
       }
       R_i[i] <- max(range_temp) - min(range_temp)
     }
-    Rbar <- sum(R_i)/(length(x[!is.na(x)])-(mrlength-1))
+    Rbar <- sum(R_i)/(length(data[!is.na(data)])-(mrlength-1))
     
     if (unbias_sub) {
       S_within <<- Rbar/(Lookup$d2[mrlength])
@@ -115,12 +121,12 @@ vectis.cap <- function(x,
   }
 
   if (unbias_overall) {
-    S_overall <- sd(x)/(Lookup$c4[length(x[!is.na(x)])])
+    S_overall <- sd(data)/(Lookup$c4[length(data[!is.na(data)])])
     } else {
-    S_overall <- sd(x)
+    S_overall <- sd(data)
     }
 
-  mu <- mean(x)
+  mu <- mean(data)
   
   # Process Data
   Proc_Data <- vector(mode = "numeric", length = 8)
@@ -130,7 +136,7 @@ vectis.cap <- function(x,
   Proc_Data["Target"] <- target
   Proc_Data["USL"] <- USL
   Proc_Data["Sample Mean"] <- mu
-  Proc_Data["Number of Obs."] <- length(x[!is.na(x)])
+  Proc_Data["Number of Obs."] <- length(data[!is.na(data)])
   Proc_Data["StDev(Within)"] <- S_within
   Proc_Data["StDev(Overall)"] <- S_overall
   Proc_Data["Group Size"] <- groupsize
@@ -152,7 +158,7 @@ vectis.cap <- function(x,
   PPS["PPL"] <- (mu - LSL)/(.5*tol*S_overall)
   PPS["PPU"] <- (USL - mu)/(.5*tol*S_overall)
   PPS["Ppk"] <- min(PPS["PPU"],PPS["PPL"])
-  PPS["Cpm"] <- min(USL-target,target-LSL)/(.5*tol*sd(x))
+  PPS["Cpm"] <- min(USL-target,target-LSL)/(.5*tol*sd(data))
   
   #Expected Within/Overall/Observed Performance
   PERF <- vector(mode = "numeric", length = 9)
@@ -163,60 +169,102 @@ vectis.cap <- function(x,
   PERF["POLL"] <- 1e6*(1-pnorm((mu-LSL)/S_overall))
   PERF["POGU"] <- 1e6*(1-pnorm((USL-mu)/S_overall))
   PERF["POT"] <- sum(PERF["POLL"],PERF["POGU"]) 
-  PERF["OBLL"] <- 1e6*(length(x[x<LSL])/length(x[!is.na(x)]))
-  PERF["OBGU"] <- 1e6*(length(x[x>USL])/length(x[!is.na(x)]))
+  PERF["OBLL"] <- 1e6*(length(data[data<LSL])/length(data[!is.na(data)]))
+  PERF["OBGU"] <- 1e6*(length(data[data>USL])/length(data[!is.na(data)]))
   PERF["OBT"] <- sum(PERF["OBLL"],PERF["OBGU"]) 
 
+  #Determine max densities for plot limits
+  
+  if(density) dens_max <- max(density(data)[[2]]) else dens_max <- 0
+  freq_max <- max(hist(as.vector(data), plot = FALSE)$density)
+  with_max <- dnorm(mean(data), mean = mean(data),sd = S_within)
+  over_max <- dnorm(mean(data), mean = mean(data),sd = S_overall)
+  
+  
+  #Calculate the binwidth if not specified
+  if (binwidth == -1) {
+    #Freedman-Diaconis
+    binwidth = 2 * IQR(data) / (length(data[!is.na(data)])^(1/3))
+    #Square-root choice
+    #binwidth = diff(range(data))/sqrt(length(data[!is.na(data)]))
+  }
+  
 # Create Plots
-  x <- as.data.frame(x)
+  data <- as.data.frame(data)
   aes_now <- function(...) {structure(list(...),  class = "uneval")}
 
-  p <- ggplot(x, aes(x = x)) +
-              theme(plot.margin = unit(c(3,1,1,1), "lines"))
+  p <- ggplot(data, aes(x = data)) +
+              theme(plot.margin = unit(c(3,1,1,1), "lines"), 
+                    panel.grid.minor = element_blank(),
+                    panel.grid.major = element_blank(),
+                    panel.background = element_rect(fill = NA, color = "gray0"),    
+                    axis.title.y = element_blank(),
+                    axis.title.x = element_blank(),
+                    axis.ticks.y = element_blank(),
+                    axis.text.y = element_blank(),
+                    axis.text.x = element_text(size = 15)) + 
+       coord_cartesian(ylim = c(0, max(1.05 * dens_max, 1.05 * freq_max, 
+                                       1.05 * with_max, 1.05 * over_max)),
+                       xlim = c(min(min(data),1.1 * LSL - 0.1 * USL, target - 3 * S_within, 
+                                    target - 3 * S_overall),
+                                max(max(data),1.1 * USL - 0.1 * LSL, target + 3 * S_within, 
+                                    target + 3 * S_overall))) +
+           xlim(min(min(data),1.1 * LSL - 0.1 * USL, target - 3 * S_within, target - 3 * S_overall),
+                max(max(data),1.1 * USL - 0.1 * LSL, target + 3 * S_within, target + 3 * S_overall)) +
+           ylim(0, max(1.05 * dens_max, 1.05 * freq_max, 
+                       1.05 * with_max, 1.05 * over_max))
 
+  
   p <- p + geom_histogram(aes(y=..density..),        
-                          binwidth = diff(range(x))/sqrt(length(x[!is.na(x)])), 
-                          color = "black", fill = "blue")
-  p <- p + geom_density()
-  p <- p + geom_vline(xintercept = LSL, linetype = 2, size = 1, color = "darkred") 
-  p <- p + geom_vline(xintercept = target, linetype = 2, size = 1, color = "green3")
-  p <- p + geom_vline(xintercept = USL, linetype = 2, size = 1, color = "darkred") 
- 
-  p <- p + geom_text(aes_now(label = c("USL","Target","LSL"), 
-                             x = c(USL,target,LSL), y = Inf), 
-                     hjust = .5, vjust = -1, color = "black", size=5)
-  p <- p + annotate(geom = "text", 
-           x = LSL, 
-           y = 0, 
-           label = "LSL", 
-           hjust = -0.1, 
-           size = 5, color = "darkred") 
-  p <- p + annotate(geom = "text",
-           x = target, 
-           y = 0, 
-           label = "TAR",
-           hjust = -0.1,
-           size = 5, color = "green3")
-  p <- p + annotate(geom = "text",
-           x = USL, 
-           y = 0, 
-           label = "USL",
-           hjust = 1.1, 
-           size = 5, color = "darkred") 
+                          binwidth = binwidth, 
+                          color = "black", fill = "slategray1", position = "identity")
+  
+  if(density) {p <- p + geom_line(stat="density", size = 1.1, 
+                                  color = "dodgerblue3", position="identity")}
+  
+  p <- p + geom_vline(xintercept = LSL, linetype = 5, size = .65, color = "red3") 
+  p <- p + geom_vline(xintercept = target, linetype = 5, size = .65, color = "green3")
+  p <- p + geom_vline(xintercept = USL, linetype = 5, size = .65, color = "red3") 
+   
+  p <- p + geom_text(aes_now(label = c("USL"), x = c(USL), y = Inf, family = "sans"), 
+                     hjust = .5, vjust = -1, color = "red3", size=5)
+  p <- p + geom_text(aes_now(label = c("LSL"), x = c(LSL), y = Inf, family = "sans"), 
+                     hjust = .5, vjust = -1, color = "red3", size=5)
+  p <- p + geom_text(aes_now(label = c("Target"), x = c(target), y = Inf, family = "sans"), 
+                     hjust = .5, vjust = -1, color = "green3", size=5)
+  
+  p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_within), 
+                         color = "red3", size = 1.1, linetype = 1)
+  p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_overall), 
+                         color = "gray0", size = 1.1, linetype = 2)
+  
+#   p <- p + opts(panel.background = theme_rect())
+  
+#   p <- p + annotate(geom = "text", 
+#            x = LSL, 
+#            y = 0, 
+#            label = "LSL", 
+#            hjust = -0.1, 
+#            size = 5, color = "darkred") 
+#   p <- p + annotate(geom = "text",
+#            x = target, 
+#            y = 0, 
+#            label = "TAR",
+#            hjust = -0.1,
+#            size = 5, color = "green3")
+#   p <- p + annotate(geom = "text",
+#            x = USL, 
+#            y = 0, 
+#            label = "USL",
+#            hjust = 1.1, 
+#            size = 5, color = "darkred") 
+  
+  # Disable Clipping
   gt <- ggplot_gtable(ggplot_build(p))
   gt$layout$clip[gt$layout$name == "panel"] <- "off"
   grid.draw(gt)
-  
-#   p <- p + stat_density(geom="path", 
-#                         position="identity", 
-#                         binwidth = diff(range(x))/sqrt(length(x[!is.na(x)])),
-#                         size = 1) +
-#            stat_function(fun = dnorm, 
-#                          args = with(as.data.frame(x),	c(mean(x), sd(x))), 
-#                          linetype = 2, size = 1)
-  
+    
   print(gt)
-  
   
   output <- list(Proc_Data,CPS,PPS,PERF)
   class(output) <- 'myclass'
