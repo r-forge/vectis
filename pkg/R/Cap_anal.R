@@ -1,3 +1,4 @@
+#Function to generate text and graphical capabilities analyses on a data set
 vectis.cap <- function(data,
                        distribution = "normal",
                        USL = NA,
@@ -12,7 +13,8 @@ vectis.cap <- function(data,
                        unbias_sub = TRUE,
                        unbias_overall = FALSE,
                        density = FALSE,
-                       binwidth = -1
+                       binwidth = -1,
+                       plot = TRUE
                        )
 {
   library(ggplot2)
@@ -21,10 +23,10 @@ vectis.cap <- function(data,
   if (is.na(target)){
   stop("Target not specified")
   }
-  if (is.na(LSL) & is.na(USL)){
+  if (is.na(LSL) && is.na(USL)){
   stop("Upper and Lower Specification Limits not specified")
   }
-  if (groupsize < 1 | groupsize > 50){
+  if (groupsize < 1 || groupsize > 50){
   stop("Group Size must be between 1 and 50")
   }
   if (mrlength < 2){
@@ -98,6 +100,10 @@ vectis.cap <- function(data,
 #   unbias_sub = TRUE
 #   unbias_overall = TRUE
   
+  # Estimate the standard deviation within subgroups by the average of the moving range 
+  # Add other methods here for subgroup size of 1
+  
+  
   if (groupsize == 1){
     R_i <- vector(mode = "numeric", length = (length(data[!is.na(data)])-(mrlength-1)))
     range_temp <- vector(mode = "numeric", length = mrlength)
@@ -120,6 +126,7 @@ vectis.cap <- function(data,
     #Add Here
   }
 
+  # Calculate overall standard deviation and apply the unbiasing constant if desired
   if (unbias_overall) {
     S_overall <- sd(data)/(Lookup$c4[length(data[!is.na(data)])])
     } else {
@@ -140,8 +147,7 @@ vectis.cap <- function(data,
   Proc_Data["StDev(Within)"] <- S_within
   Proc_Data["StDev(Overall)"] <- S_overall
   Proc_Data["Group Size"] <- groupsize
-  
-  
+    
   # Potential Capability Matrix
   CPS <- vector(mode = "numeric", length = 5)
   names(CPS) <- c("Cp","CPL", "CPU", "Cpk", "CCpk")
@@ -173,14 +179,14 @@ vectis.cap <- function(data,
   PERF["OBGU"] <- 1e6*(length(data[data>USL])/length(data[!is.na(data)]))
   PERF["OBT"] <- sum(PERF["OBLL"],PERF["OBGU"]) 
 
-  #Determine max densities for plot limits
+  if(plot){
   
+  #Determine max densities for plot limits
   if(density) dens_max <- max(density(data)[[2]]) else dens_max <- 0
   freq_max <- max(hist(as.vector(data), plot = FALSE)$density)
   with_max <- dnorm(mean(data), mean = mean(data),sd = S_within)
   over_max <- dnorm(mean(data), mean = mean(data),sd = S_overall)
-  
-  
+    
   #Calculate the binwidth if not specified
   if (binwidth == -1) {
     #Freedman-Diaconis
@@ -189,10 +195,13 @@ vectis.cap <- function(data,
     #binwidth = diff(range(data))/sqrt(length(data[!is.na(data)]))
   }
   
-# Create Plots
+  #Create Plots
   data <- as.data.frame(data)
+  
+  #define function for aes that evaluates expressions
   aes_now <- function(...) {structure(list(...),  class = "uneval")}
 
+  #Initial plot definition
   p <- ggplot(data, aes(x = data)) +
               theme(plot.margin = unit(c(3,1,1,1), "lines"), 
                     panel.grid.minor = element_blank(),
@@ -213,15 +222,16 @@ vectis.cap <- function(data,
                 max(max(data),1.1 * USL - 0.1 * LSL, target + 3 * S_within, target + 3 * S_overall)) +
            ylim(0, max(1.05 * dens_max, 1.05 * freq_max, 
                        1.05 * with_max, 1.05 * over_max))
-
   
+  #Add histogram
   p <- p + geom_histogram(aes(y=..density..),        
                           binwidth = binwidth, 
                           color = "black", fill = "slategray1", position = "identity")
   
+  #Add Density
   if(density) {p <- p + geom_line(stat="density", size = 1.1, 
                                   color = "dodgerblue3", position="identity")}
-  
+  #Add Spec Limits and labels
   p <- p + geom_vline(xintercept = LSL, linetype = 5, size = .65, color = "red3") 
   p <- p + geom_vline(xintercept = target, linetype = 5, size = .65, color = "green3")
   p <- p + geom_vline(xintercept = USL, linetype = 5, size = .65, color = "red3") 
@@ -233,44 +243,28 @@ vectis.cap <- function(data,
   p <- p + geom_text(aes_now(label = c("Target"), x = c(target), y = Inf, family = "sans"), 
                      hjust = .5, vjust = -1, color = "green3", size=5)
   
+  #Add within and overall distribution lines
   p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_within), 
                          color = "red3", size = 1.1, linetype = 1)
   p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_overall), 
                          color = "gray0", size = 1.1, linetype = 2)
   
-#   p <- p + opts(panel.background = theme_rect())
-  
-#   p <- p + annotate(geom = "text", 
-#            x = LSL, 
-#            y = 0, 
-#            label = "LSL", 
-#            hjust = -0.1, 
-#            size = 5, color = "darkred") 
-#   p <- p + annotate(geom = "text",
-#            x = target, 
-#            y = 0, 
-#            label = "TAR",
-#            hjust = -0.1,
-#            size = 5, color = "green3")
-#   p <- p + annotate(geom = "text",
-#            x = USL, 
-#            y = 0, 
-#            label = "USL",
-#            hjust = 1.1, 
-#            size = 5, color = "darkred") 
-  
-  # Disable Clipping
+  #Disable Clipping
   gt <- ggplot_gtable(ggplot_build(p))
   gt$layout$clip[gt$layout$name == "panel"] <- "off"
   grid.draw(gt)
     
+  #Render plot
   print(gt)
+  }
   
+  #Define output
   output <- list(Proc_Data,CPS,PPS,PERF)
   class(output) <- 'myclass'
   return(output)
 }
 
+#Format Text Output
 print.myclass <- function(x) {
   cat("Capabiliy Analysis","\n")
   print(noquote(cbind(`Process Data` = unlist(x[[1]]))), digits = 4)

@@ -8,18 +8,22 @@ Function to Compute and Display Process Capability
 Computes the process capability of a continuous variable
 }
 \usage{
-vectis.cap (x, distribution = "normal",
-                       USL = NA,
-                       LSL = NA,
-                       target = NA,
-                       main = "Capabilities Analysis",
-                       sub = "",
-                       groupsize = 1,
-                       mrlength = 2,
-                       alpha = 0.05,
-                       tol = 5.15,
-                       unbias_sub = TRUE,
-                       unbias_overall = FALSE)
+vectis.cap(data, 
+           distribution = "normal",
+           USL = NA,
+           LSL = NA,
+           target = NA,
+           main = "Capabilities Analysis",
+           sub = "",
+           groupsize = 1,
+           mrlength = 2,
+           alpha = 0.05,
+           tol = 5.15,
+           unbias_sub = TRUE,
+           unbias_overall = FALSE
+           density = FALSE,
+           binwidth = -1
+           plot = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,10 +36,13 @@ vectis.cap (x, distribution = "normal",
   \item{sub}{Chart Subtitle}
   \item{groupsize}{Group size for grouped data.  Data must be sorted by groups.  Currently only a groupsize of 1 is supported.}
   \item{mrlength}{Number of observations used in the moving range to compute the within standard deviation for groupsize = 1.}
-  \item{alpha}{Probability of a Type I error}
-  \item{tol}{Sigma multiplier for capabilities statistics.  Usually defined as 5.15 or 6}
-  \item{unbias_sub}{Logical value as to whether the subgroup standard deviation should include the unbiasing constant. Default is TRUE}
-  \item{unbias_overall}{Logical value as to whether the overall standard deviation should include the unbiasing constant. Default is FALSE}
+  \item{alpha}{Probability of a Type I error.}
+  \item{tol}{Sigma multiplier for capabilities statistics.  Usually defined as 5.15 or 6.}
+  \item{unbias_sub}{Logical value as to whether the subgroup standard deviation should include the unbiasing constant. Default is TRUE.}
+  \item{unbias_overall}{Logical value as to whether the overall standard deviation should include the unbiasing constant. Default is FALSE.}
+  \item{density}{Logical value to control the display of the density curve.  Default is FALSE.}
+  \item{binwidth}{Overrides automatic determination of bin width in histogram.  If set to -1 (default) then the function automatically calculates the optimum binwidth.}
+  \item{plot}{Logical value to control plotting.  Default is TRUE}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
