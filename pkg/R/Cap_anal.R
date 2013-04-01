@@ -4,7 +4,7 @@ vectis.cap <- function(data,
                        USL = NA,
                        LSL = NA,
                        target = NA,
-                       main = "Capabilities Analysis",
+                       main = "Process Capability",
                        sub = "",
                        groupsize = 1,
                        mrlength = 2,
@@ -14,7 +14,9 @@ vectis.cap <- function(data,
                        unbias_overall = FALSE,
                        density = FALSE,
                        binwidth = -1,
-                       plot = TRUE
+                       plot = TRUE,
+                       name = "Measurement",
+                       footer = TRUE
                        )
 {
   library(ggplot2)
@@ -135,6 +137,7 @@ vectis.cap <- function(data,
 
   mu <- mean(data)
   
+  
   # Process Data
   Proc_Data <- vector(mode = "numeric", length = 8)
   names(Proc_Data) <- c("LSL","Target","USL","Sample Mean","Number of Obs.",
@@ -203,16 +206,22 @@ vectis.cap <- function(data,
 
   #Initial plot definition
   p <- ggplot(data, aes(x = data)) +
-              theme(plot.margin = unit(c(3,1,1,1), "lines"), 
+              theme(plot.margin = unit(c(3,0,.5,0), "lines"), 
                     panel.grid.minor = element_blank(),
                     panel.grid.major = element_blank(),
-                    panel.background = element_rect(fill = NA, color = "gray0"),    
+                    panel.background = element_rect(fill = "white", color = "gray0"), 
+                    plot.background = element_rect(fill = "cornsilk", color = NA),
                     axis.title.y = element_blank(),
                     axis.title.x = element_blank(),
                     axis.ticks.y = element_blank(),
                     axis.text.y = element_blank(),
                     axis.text.x = element_text(size = 15),
-                    legend.position = "none") + 
+                    legend.background = element_rect(fill = "white", color = "gray0"),
+                    legend.key = element_rect(fill = NA, color = NA),
+                    legend.key.width = unit(3,"lines"),
+                    legend.key.height = unit(1,"lines")
+#                     legend.position = c(0,0)
+                    ) + 
        coord_cartesian(ylim = c(0, max(1.05 * dens_max, 1.05 * freq_max, 
                                        1.05 * with_max, 1.05 * over_max)),
                        xlim = c(min(min(data),1.1 * LSL - 0.1 * USL, target - 3 * S_within, 
@@ -231,92 +240,218 @@ vectis.cap <- function(data,
   
   #Add Density
   if(density) {p <- p + geom_line(stat="density", size = 1.1, 
-                                  aes(color = "density"), position="identity")}
+                                  aes(color = "density"), position="identity", linetype = 1)}
   #Add Spec Limits and labels
   p <- p + geom_vline(xintercept = LSL, linetype = 5, size = .65, color = "red3") 
   p <- p + geom_vline(xintercept = target, linetype = 5, size = .65, color = "green3")
   p <- p + geom_vline(xintercept = USL, linetype = 5, size = .65, color = "red3") 
    
   p <- p + geom_text(aes_now(label = c("USL"), x = c(USL), y = Inf, family = "sans"), 
-                     hjust = .5, vjust = -1, color = "red3", size=5)
+                     hjust = .5, vjust = -1, color = "red3", size=4)
   p <- p + geom_text(aes_now(label = c("LSL"), x = c(LSL), y = Inf, family = "sans"), 
-                     hjust = .5, vjust = -1, color = "red3", size=5)
+                     hjust = .5, vjust = -1, color = "red3", size=4)
   p <- p + geom_text(aes_now(label = c("Target"), x = c(target), y = Inf, family = "sans"), 
-                     hjust = .5, vjust = -1, color = "green3", size=5)
+                     hjust = .5, vjust = -1, color = "green3", size=4)
   
   #Add within and overall distribution lines
   p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_within), 
-                         aes(color = "d_with"), size = 1.1, linetype = 1)
+                         aes(color = "dwith", linetype = "dwith"), size = 1.1, linetype = 2)
   p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_overall), 
-                         aes(color = "d_over"), size = 1.1, linetype = 2)
+                         aes(color = "dover", linetype = "dover"), size = 1.1, linetype = 1)
   
   #Add Legend (currently disabled by theme)
-  p <- p + scale_color_manual("Legend",
-                              labels = c("Within","Overall","Density"),
-                              values = c("d_with"="red3",
-                                         "d_over"="gray0",
-                                         "density"="dodgerblue3"))
-  
-#   #Disable Clipping
-#   gt <- ggplot_gtable(ggplot_build(p))
-#   gt$layout$clip[gt$layout$name == "panel"] <- "off"
-#   grid.draw(gt)
+  p <- p +    
+#     scale_linetype_manual(values = c(2,1,1))+
     
-  .ss.prepCanvas<-function(main="Six Sigma graph", sub="My Six Sigma Project",
-                           ss.col=c("#666666", "#BBBBBB", "#CCCCCC", "#DDDDDD", "#EEEEEE")){
-    #Plot
+    scale_color_manual("Legend",
+                              labels = c("Within","Overall","Density"), 
+                              breaks = c("dwith","dover","density"),
+                              values = c("dwith"="red3",
+                                         "dover"="gray0",
+                                         "density"="dodgerblue3"))
+
+  
+  
+  Proc_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(.2,1))+
+    theme(plot.margin = unit(c(3,0.1,1,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Process Data"), 
+                  x = .5, y = 1, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("LSL"), 
+                  x = .05, y = .9, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Target"), 
+                  x = .05, y = .8, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("USL"), 
+                  x = .05, y = .7, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Sample Mean"), 
+                  x = .05, y = .6, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Sample N"), 
+                  x = .05, y = .5, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("StDev(Within)"), 
+                  x = .05, y = .4, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("StDev(Overall)"), 
+                  x = .05, y = .3, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    
+    geom_text(aes_now(label = sprintf("%.3f",LSL), 
+                      x = .6, y = .9, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",target), 
+                      x = .6, y = .8, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",USL), 
+                      x = .6, y = .7, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.6f",mu), 
+                      x = .6, y = .6, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = length(data[!is.na(data)]), 
+                      x = .6, y = .5, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.8f",S_within), 
+                      x = .6, y = .4, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.8f",S_overall), 
+                      x = .6, y = .3, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)
+  
+    
+  Leg_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(.2,1))+
+    theme(plot.margin = unit(c(3,2,5,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Legend"), 
+                  x = .5, y = 1, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4) +
+    geom_segment(x = .5, xend = .2, y = .9, yend = .9, colour = "red3", linetype = 2)
+  
+  
+  
+  #####Builds 3x1 grid fro title at top, sub at bottom and one large container in center
+
+  
+  #Plot
     grid.newpage()
-    grid.rect(gp=gpar(col=ss.col[2], lwd=2, fill=ss.col[5]))
     vp.canvas<-viewport(name="canvas",
-                        width=unit(1,"npc")-unit(6,"mm"),
-                        height=unit(1,"npc")-unit(6,"mm"),
+                        width=unit(11,"inches"),
+                        height=unit(8.5,"inches"),
                         layout=grid.layout(3,1,
-                                           heights=unit(c(3,1,2), c("lines", "null", "lines"))
-                        ))
+                        heights=unit(c(3,1,1), c("lines", "null", "lines"))))
     pushViewport(vp.canvas)
-    grid.rect(gp=gpar(col="#FFFFFF", lwd=0, fill="#FFFFFF"))
+    grid.rect(gp=gpar(col="gray0", 
+                      lwd=0, 
+                      fill="cornsilk"))
     
     #Title
-    vp.title<-viewport(layout.pos.col=1, layout.pos.row=1, name="title")
+    vp.title<-viewport(layout.pos.col=1, 
+                       layout.pos.row=1, 
+                       name="title")
     pushViewport(vp.title)
-    grid.text (main, gp=gpar(fontsize=20))
+    grid.text(paste(main," of ", name, sep = ""), 
+              gp=gpar(fontsize=18), 
+              just = c("center","bottom"))
+    grid.text(paste("\n",sub), 
+              gp=gpar(fontsize=15), 
+              just = c("center","center"))
     popViewport()
     
-    #Subtitle
-    vp.subtitle<-viewport(layout.pos.col=1, layout.pos.row=3, name="subtitle")
+    #Footer
+    if(footer){
+    vp.subtitle<-viewport(layout.pos.col=1, layout.pos.row=3, name="footer")
     pushViewport(vp.subtitle)
-    grid.text ( sub, gp=gpar(col=ss.col[1]))
-    popViewport()
+    grid.text(R.Version()$version.string, 
+              x = unit(1, "lines"), 
+              gp=gpar(col="gray3",fontsize=10),
+              just = c("left","center"))
+    grid.text(format(Sys.time(), "%b %d, %Y"), 
+              x = unit(1, "npc") - unit(1,"lines"), 
+              gp=gpar(col="gray3",fontsize=10),
+              just = c("right","center"))
+    popViewport()}
     
     #Container
     vp.container<-viewport(layout.pos.col=1, layout.pos.row=2, name="container")
     pushViewport(vp.container)
-  }
+    grid.text ( "container")
+
   
+    gt1 <- ggplot_gtable(ggplot_build(p))
+    gt2 <- ggplot_gtable(ggplot_build(Proc_leg))
+    gt3 <- ggplot_gtable(ggplot_build(Leg_leg))
+
+    gt1$layout$clip[gt1$layout$name == "panel"] <- "off"
+    
+    gt <- gtable(widths = unit(c(1, 1, 1, 1), "null"), 
+                 height = unit(c(12, 1, 1, 5), c("lines", "null", "null", "lines")))
+    
+    gt <- gtable_add_grob(gt, gt1[,-5], 1, 2, b = 3, r = 3)
+    gt <- gtable_add_grob(gt, gt2[,], 1, 1)
+    gt <- gtable_add_grob(gt, gt3[,], 1, 4)
   
-  .ss.prepCanvas()
-  #grid.rect()##########
-  vp.plots<-viewport(name="plots",
-                     layout=grid.layout(2,2,c(0.6,0.4),c(0.6,0.4)))
-  pushViewport(vp.plots)
+    gt$layout$clip[gt$layout$name == "panel"] <- "off"
+    grid.draw(gt)
+ 
   
-  vp.hist <- viewport(name="hist", layout.pos.row=1, layout.pos.col=1)
-  pushViewport(vp.hist)
-  #grid.rect()##########
-  grid.text("Histogram & Density", y=1, just=c("center", "top") )
-  
-  
-  print(p, newpage=FALSE)
-  
-  popViewport()
-  vp.norm<-viewport(name="normal",layout.pos.row=2, layout.pos.col=1,
-                    layout=grid.layout(2,2,c(0.6,0.4),c(0.1, 0.9)))
-  pushViewport(vp.norm)
-  grid.text("Check Normality", y=1,just=c("center","top"))
-  
-  #Render plot
-#   print(gt, vp = viewport(layout.pos.row = 2, layout.pos.col = 2))
-#   print(p, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
 }
   
   #Define output
