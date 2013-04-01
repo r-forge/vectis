@@ -257,24 +257,67 @@ vectis.cap <- function(data,
                                          "d_over"="gray0",
                                          "density"="dodgerblue3"))
   
-  #Disable Clipping
-  gt <- ggplot_gtable(ggplot_build(p))
-  gt$layout$clip[gt$layout$name == "panel"] <- "off"
-  grid.draw(gt)
+#   #Disable Clipping
+#   gt <- ggplot_gtable(ggplot_build(p))
+#   gt$layout$clip[gt$layout$name == "panel"] <- "off"
+#   grid.draw(gt)
     
-  grid.newpage()
-  pushViewport(viewport(
-    layout = grid.layout(3, 3, 
-                         width = unit(c(5,1,5),c("lines","npc","lines")),
-                         height = unit(c(2,1,5),c("lines","npc","lines"))
-                         )))
+  .ss.prepCanvas<-function(main="Six Sigma graph", sub="My Six Sigma Project",
+                           ss.col=c("#666666", "#BBBBBB", "#CCCCCC", "#DDDDDD", "#EEEEEE")){
+    #Plot
+    grid.newpage()
+    grid.rect(gp=gpar(col=ss.col[2], lwd=2, fill=ss.col[5]))
+    vp.canvas<-viewport(name="canvas",
+                        width=unit(1,"npc")-unit(6,"mm"),
+                        height=unit(1,"npc")-unit(6,"mm"),
+                        layout=grid.layout(3,1,
+                                           heights=unit(c(3,1,2), c("lines", "null", "lines"))
+                        ))
+    pushViewport(vp.canvas)
+    grid.rect(gp=gpar(col="#FFFFFF", lwd=0, fill="#FFFFFF"))
+    
+    #Title
+    vp.title<-viewport(layout.pos.col=1, layout.pos.row=1, name="title")
+    pushViewport(vp.title)
+    grid.text (main, gp=gpar(fontsize=20))
+    popViewport()
+    
+    #Subtitle
+    vp.subtitle<-viewport(layout.pos.col=1, layout.pos.row=3, name="subtitle")
+    pushViewport(vp.subtitle)
+    grid.text ( sub, gp=gpar(col=ss.col[1]))
+    popViewport()
+    
+    #Container
+    vp.container<-viewport(layout.pos.col=1, layout.pos.row=2, name="container")
+    pushViewport(vp.container)
+  }
   
   
+  .ss.prepCanvas()
+  #grid.rect()##########
+  vp.plots<-viewport(name="plots",
+                     layout=grid.layout(2,2,c(0.6,0.4),c(0.6,0.4)))
+  pushViewport(vp.plots)
   
+  vp.hist <- viewport(name="hist", layout.pos.row=1, layout.pos.col=1)
+  pushViewport(vp.hist)
+  #grid.rect()##########
+  grid.text("Histogram & Density", y=1, just=c("center", "top") )
+  
+  
+  print(p, newpage=FALSE)
+  
+  popViewport()
+  vp.norm<-viewport(name="normal",layout.pos.row=2, layout.pos.col=1,
+                    layout=grid.layout(2,2,c(0.6,0.4),c(0.1, 0.9)))
+  pushViewport(vp.norm)
+  grid.text("Check Normality", y=1,just=c("center","top"))
   
   #Render plot
-  print(gt, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-  }
+#   print(gt, vp = viewport(layout.pos.row = 2, layout.pos.col = 2))
+#   print(p, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+}
   
   #Define output
   output <- list(Proc_Data,CPS,PPS,PERF)
