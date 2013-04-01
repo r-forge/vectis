@@ -211,7 +211,8 @@ vectis.cap <- function(data,
                     axis.title.x = element_blank(),
                     axis.ticks.y = element_blank(),
                     axis.text.y = element_blank(),
-                    axis.text.x = element_text(size = 15)) + 
+                    axis.text.x = element_text(size = 15),
+                    legend.position = "none") + 
        coord_cartesian(ylim = c(0, max(1.05 * dens_max, 1.05 * freq_max, 
                                        1.05 * with_max, 1.05 * over_max)),
                        xlim = c(min(min(data),1.1 * LSL - 0.1 * USL, target - 3 * S_within, 
@@ -230,7 +231,7 @@ vectis.cap <- function(data,
   
   #Add Density
   if(density) {p <- p + geom_line(stat="density", size = 1.1, 
-                                  color = "dodgerblue3", position="identity")}
+                                  aes(color = "density"), position="identity")}
   #Add Spec Limits and labels
   p <- p + geom_vline(xintercept = LSL, linetype = 5, size = .65, color = "red3") 
   p <- p + geom_vline(xintercept = target, linetype = 5, size = .65, color = "green3")
@@ -245,17 +246,34 @@ vectis.cap <- function(data,
   
   #Add within and overall distribution lines
   p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_within), 
-                         color = "red3", size = 1.1, linetype = 1)
+                         aes(color = "d_with"), size = 1.1, linetype = 1)
   p <- p + stat_function(fun = dnorm,args=list(mean = mu, sd = S_overall), 
-                         color = "gray0", size = 1.1, linetype = 2)
+                         aes(color = "d_over"), size = 1.1, linetype = 2)
+  
+  #Add Legend (currently disabled by theme)
+  p <- p + scale_color_manual("Legend",
+                              labels = c("Within","Overall","Density"),
+                              values = c("d_with"="red3",
+                                         "d_over"="gray0",
+                                         "density"="dodgerblue3"))
   
   #Disable Clipping
   gt <- ggplot_gtable(ggplot_build(p))
   gt$layout$clip[gt$layout$name == "panel"] <- "off"
   grid.draw(gt)
     
+  grid.newpage()
+  pushViewport(viewport(
+    layout = grid.layout(3, 3, 
+                         width = unit(c(5,1,5),c("lines","npc","lines")),
+                         height = unit(c(2,1,5),c("lines","npc","lines"))
+                         )))
+  
+  
+  
+  
   #Render plot
-  print(gt)
+  print(gt, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
   }
   
   #Define output
