@@ -36,7 +36,7 @@ vectis.cap <- function(data,
   }
   
   Lookup <-
-    structure(list(N = 1:100, 
+    {structure(list(N = 1:100, 
                    c4 = c(NA, 0.797885, 0.886227, 0.921318, 
                           0.939986, 0.951533, 0.959369, 0.96503, 0.969311, 0.972659, 0.97535, 
                           0.977559, 0.979406, 0.980971, 0.982316, 0.983484, 0.984506, 0.98541, 
@@ -86,7 +86,7 @@ vectis.cap <- function(data,
                           NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 
                           NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)), 
               .Names = c("N", "c4", "c5", "d2", "d3", "d4"), class = "data.frame", 
-              row.names = c(NA, -100L))
+              row.names = c(NA, -100L))}
     
 #   x <- c(3,5,2,3,7,4,9,1,7,5,8,3)
 #   distribution = "normal"
@@ -138,8 +138,8 @@ vectis.cap <- function(data,
   mu <- mean(data)
   
   
-  # Process Data
-  Proc_Data <- vector(mode = "numeric", length = 8)
+  # Process Data 
+  {Proc_Data <- vector(mode = "numeric", length = 8)
   names(Proc_Data) <- c("LSL","Target","USL","Sample Mean","Number of Obs.",
                         "StDev(Within)","StDev(Overall)","Group Size")
   Proc_Data["LSL"] <- LSL
@@ -149,28 +149,28 @@ vectis.cap <- function(data,
   Proc_Data["Number of Obs."] <- length(data[!is.na(data)])
   Proc_Data["StDev(Within)"] <- S_within
   Proc_Data["StDev(Overall)"] <- S_overall
-  Proc_Data["Group Size"] <- groupsize
+  Proc_Data["Group Size"] <- groupsize}
     
   # Potential Capability Matrix
-  CPS <- vector(mode = "numeric", length = 5)
+  {CPS <- vector(mode = "numeric", length = 5)
   names(CPS) <- c("Cp","CPL", "CPU", "Cpk", "CCpk")
   CPS["Cp"] <- (USL - LSL)/(tol*S_within)
   CPS["CPL"] <- (mu - LSL)/(.5*tol*S_within)
   CPS["CPU"] <- (USL - mu)/(.5*tol*S_within)
   CPS["Cpk"] <- min(CPS["CPU"],CPS["CPL"])
-  CPS["CCpk"] <- min(USL-target,target-LSL)/(.5*tol*S_within)
+  CPS["CCpk"] <- min(USL-target,target-LSL)/(.5*tol*S_within)}
   
   # Overall Capability Matrix
-  PPS <- vector(mode = "numeric", length = 5)
+  {PPS <- vector(mode = "numeric", length = 5)
   names(PPS) <- c("Pp","PPL", "PPU", "Ppk", "Cpm")
   PPS["Pp"] <- (USL - LSL)/(tol*S_overall)
   PPS["PPL"] <- (mu - LSL)/(.5*tol*S_overall)
   PPS["PPU"] <- (USL - mu)/(.5*tol*S_overall)
   PPS["Ppk"] <- min(PPS["PPU"],PPS["PPL"])
-  PPS["Cpm"] <- min(USL-target,target-LSL)/(.5*tol*sd(data))
+  PPS["Cpm"] <- min(USL-target,target-LSL)/(.5*tol*sd(data))}
   
   #Expected Within/Overall/Observed Performance
-  PERF <- vector(mode = "numeric", length = 9)
+  {PERF <- vector(mode = "numeric", length = 9)
   names(PERF) <- c("PWLL","PWGU","PWT","POLL","POGU","POT","OBLL","OBGU","OBT")
   PERF["PWLL"] <- 1e6*(1-pnorm((mu-LSL)/S_within))
   PERF["PWGU"] <- 1e6*(1-pnorm((USL-mu)/S_within))
@@ -180,7 +180,7 @@ vectis.cap <- function(data,
   PERF["POT"] <- sum(PERF["POLL"],PERF["POGU"]) 
   PERF["OBLL"] <- 1e6*(length(data[data<LSL])/length(data[!is.na(data)]))
   PERF["OBGU"] <- 1e6*(length(data[data>USL])/length(data[!is.na(data)]))
-  PERF["OBT"] <- sum(PERF["OBLL"],PERF["OBGU"]) 
+  PERF["OBT"] <- sum(PERF["OBLL"],PERF["OBGU"])} 
 
   if(plot){
   
@@ -206,8 +206,7 @@ vectis.cap <- function(data,
 
   #Initial plot definition
   p <- ggplot(data, aes(x = data)) +
-              theme(plot.margin = unit(c(2
-                                         ,0,.5,0), "lines"), 
+              {theme(plot.margin = unit(c(2,0,.5,0), "lines"), 
                     panel.grid.minor = element_blank(),
                     panel.grid.major = element_blank(),
                     panel.background = element_rect(fill = "white", color = "gray0"), 
@@ -220,19 +219,25 @@ vectis.cap <- function(data,
                     legend.background = element_rect(fill = "white", color = "gray0"),
                     legend.key = element_rect(fill = NA, color = NA),
                     legend.key.width = unit(3,"lines"),
-                    legend.key.height = unit(1,"lines")
-#                     legend.position = c(0,0)
-                    ) + 
-       coord_cartesian(ylim = c(0, max(1.05 * dens_max, 1.05 * freq_max, 
+                    legend.key.height = unit(1,"lines")) + 
+              coord_cartesian(ylim = c(0, max(1.05 * dens_max, 1.05 * freq_max, 
                                        1.05 * with_max, 1.05 * over_max)),
-                       xlim = c(min(min(data),1.1 * LSL - 0.1 * USL, target - 3 * S_within, 
-                                    target - 3 * S_overall),
-                                max(max(data),1.1 * USL - 0.1 * LSL, target + 3 * S_within, 
-                                    target + 3 * S_overall))) +
-           xlim(min(min(data),1.1 * LSL - 0.1 * USL, target - 3 * S_within, target - 3 * S_overall),
-                max(max(data),1.1 * USL - 0.1 * LSL, target + 3 * S_within, target + 3 * S_overall)) +
-           ylim(0, max(1.05 * dens_max, 1.05 * freq_max, 
-                       1.05 * with_max, 1.05 * over_max))
+                              xlim = c(min(min(data),
+                                           1.1 * LSL - 0.1 * USL, target - 3 * S_within, 
+                                           target - 3 * S_overall),
+                                       max(max(data),
+                                           1.1 * USL - 0.1 * LSL, target + 3 * S_within, 
+                                           target + 3 * S_overall))) +
+              xlim(min(min(data),
+                       1.1 * LSL - 0.1 * USL, 
+                       target - 3 * S_within, 
+                       target - 3 * S_overall),
+                   max(max(data),
+                       1.1 * USL - 0.1 * LSL, 
+                       target + 3 * S_within, 
+                       target + 3 * S_overall)) +
+              ylim(0, max(1.05 * dens_max, 1.05 * freq_max, 
+                          1.05 * with_max, 1.05 * over_max))}
   
   #Add histogram
   p <- p + geom_histogram(aes(y=..density..),        
@@ -246,7 +251,7 @@ vectis.cap <- function(data,
   p <- p + geom_vline(xintercept = LSL, linetype = 5, size = .65, color = "red3") 
   p <- p + geom_vline(xintercept = target, linetype = 5, size = .65, color = "green3")
   p <- p + geom_vline(xintercept = USL, linetype = 5, size = .65, color = "red3") 
-   
+
   p <- p + geom_text(aes_now(label = c("USL"), x = c(USL), y = Inf, family = "sans"), 
                      hjust = .5, vjust = -1, color = "red3", size=4)
   p <- p + geom_text(aes_now(label = c("LSL"), x = c(LSL), y = Inf, family = "sans"), 
@@ -262,8 +267,6 @@ vectis.cap <- function(data,
   
   #Add Legend (currently disabled by theme)
   p <- p +    
-#     scale_linetype_manual(values = c(2,1,1))+
-    
     scale_color_manual("Legend",
                               labels = c("Within","Overall","Density"), 
                               breaks = c("dwith","dover","density"),
@@ -272,8 +275,8 @@ vectis.cap <- function(data,
                                          "density"="dodgerblue3"))
 
   
-  
-  Proc_leg <- ggplot()+
+  # Create Process Data Legend
+  Proc_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(.2,1))+
     theme(plot.margin = unit(c(2,0.1,2,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -363,9 +366,10 @@ vectis.cap <- function(data,
                       family = "sans"), 
               hjust = -.0, vjust = 1,
               color = "gray0", size=4)
+  }
   
-    
-  Leg_leg <- ggplot()+
+  # Manually Create Chart Legend  
+  Leg_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(.2,1))+
     theme(plot.margin = unit(c(2,1,6,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -399,7 +403,7 @@ vectis.cap <- function(data,
               hjust = 0, vjust = 0.45,
               color = "gray0", size=4)
 
-    
+    # check if density is plotted and add to legend
     if(density){
     Leg_leg <- Leg_leg +
     geom_segment(aes(x = .5, xend = .1, y = .3, yend = .3), 
@@ -409,9 +413,10 @@ vectis.cap <- function(data,
                   family = "sans"), 
               hjust = 0, vjust = 0.3,
               color = "gray0", size=4)} 
+  }
   
-  
-  CPM_leg <- ggplot()+
+  # Create Cp Legend
+  CPM_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(0,1))+
     theme(plot.margin = unit(c(6,1,7,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -521,8 +526,10 @@ vectis.cap <- function(data,
                       family = "sans"), 
               hjust = -.0, vjust = 1,
               color = "gray0", size=4)
-    
-  PPM_leg <- ggplot()+
+  }
+  
+  #Create Pp Legend
+  PPM_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(0,1))+
     theme(plot.margin = unit(c(4,1,2,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -632,8 +639,10 @@ vectis.cap <- function(data,
                       family = "sans"), 
               hjust = -.0, vjust = 1,
               color = "gray0", size=4)
+  }
   
-  OBS_leg <- ggplot()+
+  #Create Observed Performance Legend
+  OBS_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(0.5,1))+
     theme(plot.margin = unit(c(0,0.1,0,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -683,8 +692,10 @@ vectis.cap <- function(data,
                       family = "sans"), 
               hjust = -.0, vjust = 1,
               color = "gray0", size=4)
-    
-  Eover_leg <- ggplot()+
+  }
+  
+  #Create Expected (Overall) Performance Legend
+  Eover_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(0.5,1))+
     theme(plot.margin = unit(c(0,.1,0,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -734,8 +745,10 @@ vectis.cap <- function(data,
                       family = "sans"), 
               hjust = -.0, vjust = 1,
               color = "gray0", size=4)
+  }
   
-  Ewith_leg <- ggplot()+
+  #Create Expected (Within) Performance Legend
+  Ewith_leg <- {ggplot()+
     xlim(c(0,1))+ylim(c(0.5,1))+
     theme(plot.margin = unit(c(0,0.1,0,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -785,14 +798,15 @@ vectis.cap <- function(data,
                       family = "sans"), 
               hjust = -.0, vjust = 1,
               color = "gray0", size=4)
+  }
   
-  
+  #Create Q-Q Plot
   y_qq <- quantile(as.numeric(data[,1]),c(.25,.75))
   x_qq <- qnorm(c(.25,.75))
   slope_qq <- diff(y_qq)/diff(x_qq)
   int_qq <- y_qq[1L] - slope_qq * x_qq[1L]
   
-  qq <- ggplot(data, aes(sample=data, shape = 16, color = "red3")) + 
+  qq <- {ggplot(data, aes(sample=data, shape = 16, color = "red3")) + 
                stat_qq() + scale_shape_identity()+
                geom_abline(slope = slope_qq, intercept = int_qq) +
     theme(plot.margin = unit(c(11,0.1,4,0), "lines"),
@@ -807,8 +821,10 @@ vectis.cap <- function(data,
           axis.ticks.y = element_blank(),
           axis.text.y = element_blank(),
           legend.position = "none")
+  }
   
-  QQ_leg <- ggplot()+ xlim(c(0,1))+ylim(c(0,1))+
+  #Crate Q-Q Plot Legend
+  QQ_leg <- {ggplot()+ xlim(c(0,1))+ylim(c(0,1))+
     theme(plot.margin = unit(c(-3,0.1,0,0), "lines"),
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
@@ -848,15 +864,13 @@ vectis.cap <- function(data,
                   family = "sans"), 
               hjust = .5, vjust = 1,
               color = "gray0", size=4)
+  }
   
-    
+  #Initialize Plot Layout
+  #Builds 1x3 grid for title at top, footer at bottom and one large 
+  #container in center to hold the ggplot object
   
-  
-  
-  #####Builds 3x1 grid fro title at top, sub at bottom and one large container in center
-
-  
-  #Plot
+    #Plot
     grid.newpage()
     vp.canvas<-viewport(name="canvas",
                         width=unit(11,"inches"),
@@ -900,7 +914,7 @@ vectis.cap <- function(data,
     pushViewport(vp.container)
     grid.text ( "container")
 
-  
+    #Build the ggplot items
     gt1 <- ggplot_gtable(ggplot_build(p))
     gt2 <- ggplot_gtable(ggplot_build(Proc_leg))
     gt3 <- ggplot_gtable(ggplot_build(Leg_leg))
@@ -912,11 +926,15 @@ vectis.cap <- function(data,
     gt9 <- ggplot_gtable(ggplot_build(qq))
     gt10 <- ggplot_gtable(ggplot_build(QQ_leg))
 
+    #Disable clipping
+    #Required for hanging text above plot
     gt1$layout$clip[gt1$layout$name == "panel"] <- "off"
     
+    #Define a 4x4 gtable to hold the objects  
     gt <- gtable(widths = unit(c(1, 1, 1, 1), "null"), 
                  height = unit(c(12, 1, 1, 5), c("lines", "null", "null", "lines")))
     
+    #Add items to gtable locations  
     gt <- gtable_add_grob(gt, gt1[,-5], 1, 2, b = 3, r = 3)
     gt <- gtable_add_grob(gt, gt2[,], 1, 1)
     gt <- gtable_add_grob(gt, gt3[,], 1, 4)
@@ -928,8 +946,8 @@ vectis.cap <- function(data,
     gt <- gtable_add_grob(gt, gt9[,], 1, 1, b = 3)
     gt <- gtable_add_grob(gt, gt10[,], 2, 1, b= 3)
   
-    gt$layout$clip[gt$layout$name == "panel"] <- "off"
-    grid.draw(gt)
+  #Render the plot  
+  grid.draw(gt)
  
   
 }
