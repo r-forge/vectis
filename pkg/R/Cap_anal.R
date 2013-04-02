@@ -206,7 +206,7 @@ vectis.cap <- function(data,
 
   #Initial plot definition
   p <- ggplot(data, aes(x = data)) +
-              {theme(plot.margin = unit(c(2,0,.5,0), "lines"), 
+              theme(plot.margin = unit(c(2,0,.5,0), "lines"), 
                     panel.grid.minor = element_blank(),
                     panel.grid.major = element_blank(),
                     panel.background = element_rect(fill = "white", color = "gray0"), 
@@ -237,7 +237,7 @@ vectis.cap <- function(data,
                        target + 3 * S_within, 
                        target + 3 * S_overall)) +
               ylim(0, max(1.05 * dens_max, 1.05 * freq_max, 
-                          1.05 * with_max, 1.05 * over_max))}
+                          1.05 * with_max, 1.05 * over_max))
   
   #Add histogram
   p <- p + geom_histogram(aes(y=..density..),        
@@ -369,7 +369,7 @@ vectis.cap <- function(data,
   }
   
   # Manually Create Chart Legend  
-  Leg_leg <- {ggplot()+
+  Leg_leg <- ggplot()+
     xlim(c(0,1))+ylim(c(.2,1))+
     theme(plot.margin = unit(c(2,1,6,0), "lines"),
           panel.grid.minor = element_blank(),
@@ -413,7 +413,7 @@ vectis.cap <- function(data,
                   family = "sans"), 
               hjust = 0, vjust = 0.3,
               color = "gray0", size=4)} 
-  }
+  
   
   # Create Cp Legend
   CPM_leg <- {ggplot()+
