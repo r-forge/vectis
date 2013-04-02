@@ -199,14 +199,15 @@ vectis.cap <- function(data,
   }
   
   #Create Plots
-  data <- as.data.frame(data)
+  data <- data.frame(data=data)
   
   #define function for aes that evaluates expressions
   aes_now <- function(...) {structure(list(...),  class = "uneval")}
 
   #Initial plot definition
   p <- ggplot(data, aes(x = data)) +
-              theme(plot.margin = unit(c(3,0,.5,0), "lines"), 
+              theme(plot.margin = unit(c(2
+                                         ,0,.5,0), "lines"), 
                     panel.grid.minor = element_blank(),
                     panel.grid.major = element_blank(),
                     panel.background = element_rect(fill = "white", color = "gray0"), 
@@ -274,7 +275,7 @@ vectis.cap <- function(data,
   
   Proc_leg <- ggplot()+
     xlim(c(0,1))+ylim(c(.2,1))+
-    theme(plot.margin = unit(c(3,0.1,1,0), "lines"),
+    theme(plot.margin = unit(c(2,0.1,2,0), "lines"),
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
           panel.background = element_rect(fill = "white", color = "gray0"), 
@@ -366,7 +367,7 @@ vectis.cap <- function(data,
     
   Leg_leg <- ggplot()+
     xlim(c(0,1))+ylim(c(.2,1))+
-    theme(plot.margin = unit(c(3,2,5,0), "lines"),
+    theme(plot.margin = unit(c(2,1,6,0), "lines"),
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
           panel.background = element_rect(fill = "white", color = "gray0"), 
@@ -379,11 +380,476 @@ vectis.cap <- function(data,
           axis.text.y = element_blank(),
           legend.position = "none") +
     geom_text(aes(label = c("Legend"), 
-                  x = .5, y = 1, 
+                  x = .5, y = .95, 
                   family = "sans"), 
               hjust = .5, vjust = 1,
               color = "gray0", size=4) +
-    geom_segment(x = .5, xend = .2, y = .9, yend = .9, colour = "red3", linetype = 2)
+    geom_segment(aes(x = .5, xend = .1, y = .65, yend = .65), 
+                 size = 1, colour = "red3", linetype = 2,position = "identity")+
+    geom_segment(aes(x = .5, xend = .1, y = .475, yend = .475), 
+                 size = 1, colour = "gray0", linetype = 1,position = "identity")+
+    geom_text(aes(label = c("Within"), 
+                  x = .6, y =.65, 
+                  family = "sans"), 
+              hjust = 0, vjust = 0.2,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Overall"), 
+                  x = .6, y = .5, 
+                  family = "sans"), 
+              hjust = 0, vjust = 0.45,
+              color = "gray0", size=4)
+
+    
+    if(density){
+    Leg_leg <- Leg_leg +
+    geom_segment(aes(x = .5, xend = .1, y = .3, yend = .3), 
+                     size = 1, colour = "dodgerblue3", linetype = 1,position = "identity") +
+    geom_text(aes(label = c("Density"), 
+                  x = .6, y = .3, 
+                  family = "sans"), 
+              hjust = 0, vjust = 0.3,
+              color = "gray0", size=4)} 
+  
+  
+  CPM_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(0,1))+
+    theme(plot.margin = unit(c(6,1,7,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Potential (Within) Capability"), 
+                  x = .5, y = 1, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Cp"), 
+                  x = .2, y = .9, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Lower CL"), 
+                  x = .2, y = .8, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Upper CL"), 
+                  x = .2, y = .7, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("CPL"), 
+                  x = .2, y = .6, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("CPU"), 
+                  x = .2, y = .5, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Cpk"), 
+                  x = .2, y = .4, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Lower CL"), 
+                  x = .2, y = .3, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Upper CL"), 
+                  x = .2, y = .2, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("CCpk"), 
+                  x = .2, y = .1, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    
+    geom_text(aes_now(label = sprintf("%.3f",CPS["Cp"]), 
+                      x = .6, y = .9, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .8, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .7, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",CPS["CPL"]), 
+                      x = .6, y = .6, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",CPS["CPU"]), 
+                      x = .6, y = .5, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",CPS["Cpk"]), 
+                      x = .6, y = .4, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .3, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .2, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",CPS["CCpk"]), 
+                      x = .6, y = .1, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)
+    
+  PPM_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(0,1))+
+    theme(plot.margin = unit(c(4,1,2,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Overall Capability"), 
+                  x = .5, y = 1, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Pp"), 
+                  x = .2, y = .9, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Lower CL"), 
+                  x = .2, y = .8, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Upper CL"), 
+                  x = .2, y = .7, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPL"), 
+                  x = .2, y = .6, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPU"), 
+                  x = .2, y = .5, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Ppk"), 
+                  x = .2, y = .4, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Lower CL"), 
+                  x = .2, y = .3, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Upper CL"), 
+                  x = .2, y = .2, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Cpm"), 
+                  x = .2, y = .1, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    
+    geom_text(aes_now(label = sprintf("%.3f",PPS["Pp"]), 
+                      x = .6, y = .9, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .8, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .7, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",PPS["PPL"]), 
+                      x = .6, y = .6, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",PPS["PPU"]), 
+                      x = .6, y = .5, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",PPS["Ppk"]), 
+                      x = .6, y = .4, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .3, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3s","-"), 
+                      x = .6, y = .2, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.3f",PPS["Cpm"]), 
+                      x = .6, y = .1, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)
+  
+  OBS_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(0.5,1))+
+    theme(plot.margin = unit(c(0,0.1,0,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Observed Performance"), 
+                  x = .5, y = .975, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM < LSL"), 
+                  x = .1, y = .85, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM > LSL"), 
+                  x = .1, y = .75, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM Total"), 
+                  x = .1, y = .65, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+   
+    geom_text(aes_now(label = sprintf("%.2f",PERF["OBLL"]), 
+                      x = .6, y = .85, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.2f",PERF["OBGU"]), 
+                      x = .6, y = .75, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.2f",PERF["OBT"]), 
+                      x = .6, y = .65, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)
+    
+  Eover_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(0.5,1))+
+    theme(plot.margin = unit(c(0,.1,0,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Exp. Overall Performance"), 
+                  x = .5, y = .975, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM < LSL"), 
+                  x = .1, y = .85, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM > LSL"), 
+                  x = .1, y = .75, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM Total"), 
+                  x = .1, y = .65, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    
+    geom_text(aes_now(label = sprintf("%.2f",PERF["POLL"]), 
+                      x = .6, y = .85, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.2f",PERF["POGU"]), 
+                      x = .6, y = .75, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.2f",PERF["POT"]), 
+                      x = .6, y = .65, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)
+  
+  Ewith_leg <- ggplot()+
+    xlim(c(0,1))+ylim(c(0.5,1))+
+    theme(plot.margin = unit(c(0,0.1,0,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Exp. Within Performance"), 
+                  x = .5, y = .975, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM < LSL"), 
+                  x = .1, y = .85, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM > LSL"), 
+                  x = .1, y = .75, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("PPM Total"), 
+                  x = .1, y = .65, 
+                  family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    
+    geom_text(aes_now(label = sprintf("%.2f",PERF["PWLL"]), 
+                      x = .6, y = .85, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.2f",PERF["PWGU"]), 
+                      x = .6, y = .75, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = sprintf("%.2f",PERF["PWT"]), 
+                      x = .6, y = .65, 
+                      family = "sans"), 
+              hjust = -.0, vjust = 1,
+              color = "gray0", size=4)
+  
+  
+  y_qq <- quantile(as.numeric(data[,1]),c(.25,.75))
+  x_qq <- qnorm(c(.25,.75))
+  slope_qq <- diff(y_qq)/diff(x_qq)
+  int_qq <- y_qq[1L] - slope_qq * x_qq[1L]
+  
+  qq <- ggplot(data, aes(sample=data, shape = 16, color = "red3")) + 
+               stat_qq() + scale_shape_identity()+
+               geom_abline(slope = slope_qq, intercept = int_qq) +
+    theme(plot.margin = unit(c(11,0.1,4,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = "white", color = "gray0"), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none")
+  
+  QQ_leg <- ggplot()+ xlim(c(0,1))+ylim(c(0,1))+
+    theme(plot.margin = unit(c(-3,0.1,0,0), "lines"),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.background = element_rect(fill = NA, color = NA), 
+          plot.background = element_rect(fill = NA, color = NA),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "none") +
+    geom_text(aes(label = c("Q-Q Plot"), 
+                  x = .5, y = .95, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Anderson-Darling Test"), 
+                  x = .5, y = .25, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes(label = c("Shapiro-Wilk Test"), 
+                  x = .5, y = 0.1, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = paste("A = ", sprintf("%.5f",ad.test(x)[[1]]), 
+                                    "       p = ", sprintf("%.5f",ad.test(x)[[2]]), sep=""), 
+                    x = .5, y = .175, 
+                    family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)+
+    geom_text(aes_now(label = paste("W = ", sprintf("%.5f",shapiro.test(x)[[1]]), 
+                                    "       p = ",sprintf("%.5f",shapiro.test(x)[[2]]), sep=""), 
+                  x = .5, y = .025, 
+                  family = "sans"), 
+              hjust = .5, vjust = 1,
+              color = "gray0", size=4)
+  
+    
   
   
   
@@ -438,6 +904,13 @@ vectis.cap <- function(data,
     gt1 <- ggplot_gtable(ggplot_build(p))
     gt2 <- ggplot_gtable(ggplot_build(Proc_leg))
     gt3 <- ggplot_gtable(ggplot_build(Leg_leg))
+    gt4 <- ggplot_gtable(ggplot_build(CPM_leg))
+    gt5 <- ggplot_gtable(ggplot_build(PPM_leg))
+    gt6 <- ggplot_gtable(ggplot_build(OBS_leg))
+    gt7 <- ggplot_gtable(ggplot_build(Ewith_leg))
+    gt8 <- ggplot_gtable(ggplot_build(Eover_leg))
+    gt9 <- ggplot_gtable(ggplot_build(qq))
+    gt10 <- ggplot_gtable(ggplot_build(QQ_leg))
 
     gt1$layout$clip[gt1$layout$name == "panel"] <- "off"
     
@@ -447,6 +920,13 @@ vectis.cap <- function(data,
     gt <- gtable_add_grob(gt, gt1[,-5], 1, 2, b = 3, r = 3)
     gt <- gtable_add_grob(gt, gt2[,], 1, 1)
     gt <- gtable_add_grob(gt, gt3[,], 1, 4)
+    gt <- gtable_add_grob(gt, gt4[,], 1, 4, b = 3)
+    gt <- gtable_add_grob(gt, gt5[,], 2, 4, b = 4)
+    gt <- gtable_add_grob(gt, gt6[,], 4, 1)
+    gt <- gtable_add_grob(gt, gt7[,], 4, 2)
+    gt <- gtable_add_grob(gt, gt8[,], 4, 3)
+    gt <- gtable_add_grob(gt, gt9[,], 1, 1, b = 3)
+    gt <- gtable_add_grob(gt, gt10[,], 2, 1, b= 3)
   
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
     grid.draw(gt)
